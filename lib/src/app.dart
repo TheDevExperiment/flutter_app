@@ -1,80 +1,85 @@
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:veil/src/pages/home.dart';
+import 'package:veil/src/pages/profile.dart';
 import 'package:veil/src/pages/register.dart';
 
 class App extends StatelessWidget {
-  const App({super.key});
+  const App({Key? key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Veil',
       theme: ThemeData(
         primarySwatch: Colors.teal,
-        scaffoldBackgroundColor: const Color(0xFF151026)
+        scaffoldBackgroundColor: const Color(0xFF151026),
       ),
-      home: MyHomePage(title: 'Veil'),
+      home: const MyHomePage(title: 'Veil'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({super.key, required this.title});
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
-  bool showRegisterScreen = false;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  bool _showRegisterScreen = false;
 
-  void showRegisterScreen() async {
+  void _checkToken() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('token');
     setState(() {
-      widget.showRegisterScreen = (token == null);
+      _showRegisterScreen = token == null;
     });
   }
 
-  void saveToken() async {
+  void _saveToken() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     // make network call here to get token
-    prefs.setString('token', "12356");
+    await prefs.setString('token', '12356');
   }
 
   @override
   void initState() {
     super.initState();
-    showRegisterScreen();
+    _checkToken();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.showRegisterScreen) {
+    if (_showRegisterScreen) {
       return Scaffold(
-      body: const SafeArea(child: RegisterPage(),),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Container(
-        height: 50,
-        margin: const EdgeInsets.all(10),
-        child: ElevatedButton(onPressed: () => {
-          saveToken(),
-          Navigator.pop(context), //clearing the stack(bug: find better way)
-          Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const Home()),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const RegisterPage(),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  _saveToken();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const UserProfilePage()),
+                    (route) => false,
+                  );
+                },
+                child: const Text("Let's go!"),
+              ),
+            ],
+          ),
         ),
-        },child: const Center(child: Text("Let's go!"))
-        ),
-      ),
-    );
+      );
     }
     return const Scaffold(
-      body: SafeArea(child: Home(),),
+      body: SafeArea(
+        child: UserProfilePage(),
+      ),
     );
   }
 }
