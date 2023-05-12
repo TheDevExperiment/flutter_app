@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:veil/src/pages/profile.dart';
+import 'package:veil/src/pages/inbox.dart';
 
 class PostPage extends StatefulWidget {
   const PostPage({super.key});
@@ -34,6 +35,16 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
             MaterialPageRoute(builder: (context) => const UserProfilePage()),
           ),
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.chat),
+            tooltip: 'Chats',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => InboxPage()),
+            ),
+          ),
+        ],
         title: const Text('Posts'),
         bottom: TabBar(
           controller: _tabController,
