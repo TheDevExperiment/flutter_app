@@ -1,80 +1,95 @@
-
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:veil/src/pages/home.dart';
+import 'package:veil/src/pages/profile.dart';
 import 'package:veil/src/pages/register.dart';
+import 'package:veil/utils/auth/auth.dart' as auth;
 
 class App extends StatelessWidget {
-  const App({super.key});
+  const App({Key? key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Veil',
       theme: ThemeData(
         primarySwatch: Colors.teal,
-        scaffoldBackgroundColor: const Color(0xFF151026)
+        scaffoldBackgroundColor: Color.fromARGB(255, 201, 192, 236),
       ),
-      home: MyHomePage(title: 'Veil'),
+      home: const HomePage(title: 'Veil'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({super.key, required this.title});
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key, required this.title}) : super(key: key);
   final String title;
-  bool showRegisterScreen = false;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-
-  void showRegisterScreen() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? token = prefs.getString('token');
-    setState(() {
-      widget.showRegisterScreen = (token == null);
-    });
-  }
-
-  void saveToken() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    // make network call here to get token
-    prefs.setString('token', "12356");
-  }
+class _HomePageState extends State<HomePage> {
+  bool _showRegisterScreen = false;
+  bool _loading = false;
+  bool _error = false;
 
   @override
   void initState() {
     super.initState();
-    showRegisterScreen();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.showRegisterScreen) {
+    if (_error) {
+      return const Scaffold(
+        body: Center(
+          child: Text(
+            'Error connecting to services.',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    }
+    if (_loading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    if (_showRegisterScreen) {
       return Scaffold(
-      body: const SafeArea(child: RegisterPage(),),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Container(
-        height: 50,
-        margin: const EdgeInsets.all(10),
-        child: ElevatedButton(onPressed: () => {
-          saveToken(),
-          Navigator.pop(context), //clearing the stack(bug: find better way)
-          Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const Home()),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const RegisterPage(),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  try {
+                    setState(() {
+                      _loading = true;
+                    });
+                    var storedToken = await auth.findTokenOnDevice();
+
+                    //validate the stored token
+                    print('found token in device(${storedToken}), validating it.');
+                  }
+                  on Exception catch (_, e) {
+                    setState(() { _loading = true; });
+                  }
+                },
+                child: const Text("Login As New User!"),
+              ),
+            ],
+          ),
         ),
-        },child: const Center(child: Text("Let's go!"))
-        ),
-      ),
-    );
+      );
     }
     return const Scaffold(
-      body: SafeArea(child: Home(),),
+      body: SafeArea(
+        child: UserProfilePage(),
+      ),
     );
   }
 }
