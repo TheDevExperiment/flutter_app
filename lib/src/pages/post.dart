@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:veil/src/pages/new_post_bottomsheet.dart';
 import 'package:veil/src/pages/profile.dart';
 import 'package:veil/src/pages/inbox.dart';
 
@@ -9,7 +10,8 @@ class PostPage extends StatefulWidget {
   State<PostPage> createState() => _PostPageState();
 }
 
-class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin {
+class _PostPageState extends State<PostPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -29,7 +31,7 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.person),
+          icon: const Icon(Icons.person),
           onPressed: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const UserProfilePage()),
@@ -53,6 +55,13 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
             Tab(text: 'Nearby Posts'),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(context: context, builder: bottomSheetBuilder);
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
       ),
       body: TabBarView(
         controller: _tabController,
@@ -91,4 +100,8 @@ class _PostPageState extends State<PostPage> with SingleTickerProviderStateMixin
       ),
     );
   }
+}
+
+Widget bottomSheetBuilder(BuildContext ctx) {
+  return NewPostBottomsheet();
 }
